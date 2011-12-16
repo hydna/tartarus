@@ -16,13 +16,15 @@
 
 
   // Internal variables
-  var KEY_MAP           = { LEFT:   37,
+  var KEY_MAP           = { ESC:    27,
+                            LEFT:   37,
                             UP:     38,
                             RIGHT:  39,
                             DOWN:   40
                           };
 
-  var KEY_MAP_REV       = { "37":   "LEFT",
+  var KEY_MAP_REV       = { "27":   "ESC",
+                            "37":   "LEFT",
                             "38":   "UP",
                             "39":   "RIGHT",
                             "40":   "DOWN"

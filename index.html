@@ -2,22 +2,158 @@
 <html>  
   <head>
     <title>Tartarus</title>
-    <script src="js/app.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Fondamento' rel='stylesheet' type='text/css'>
+    <script src="js/eventloop.js"></script>
     <script src="js/viewport.js"></script>
     <script src="js/scene.js"></script>
     <script src="js/camera.js"></script>
     <script src="js/input.js"></script>
     <script src="js/ground.js"></script>
     <script src="js/character.js"></script>
+    <script src="js/network.js"></script>
+    <script src="../hydnajs2/dist/lib.js"></script>
     <style>
+
       html, body {
+        font-family: 'Fondamento', cursive;
         margin: 0;
         padding: 0;
         overflow: hidden;
       }
+
+      h1 {
+        font-size: 3.4em;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      p {
+        font-size: 0.8em;
+        text-align: center;
+        
+      }
+
+      div#choose {
+        position: absolute;
+        padding: 0 20px 40px 20px;
+        color: white;
+        background: black;
+        left: 50%;
+        width: 400px;
+        margin-left: -220px;
+        top: 150px;
+      }
+
+      div#choose ul {
+        list-style: none;
+        overflow: hidden;
+        padding: 0;
+        margin-top: 40px;
+        margin-bottom: 40px;
+      }
+
+      div#choose ul li.character {
+        background-color: #c82708;
+        background-repeat: no-repeat;
+        border: 1px solid transparent;
+        float: left;
+        width: 50px;
+        height: 80px;
+        margin-right: 20px;
+      }
+
+      div#choose ul li.character.selected {
+        border: 1px solid black;
+      }
+
+      div#choose input {
+        color: #999999;
+        border: 1px solid #202020;
+        background: transparent;
+        font-family: 'Fondamento', cursive;
+        font-size: 1.4em;
+        text-align: center;
+        padding: 12px;
+        width: 380px;
+      }
+
+      div#choose button {
+        position: absolute;
+        color: white;
+        background: #202020;
+        border: none;
+        width: 200px;
+        height: 60px;
+        left: 50%;
+        margin-left: -100px;
+      }
+
+      #mario {
+        background-image: url(images/mario-poster.png);
+        background-position: center center;
+      }
+
+      #shader {
+        position: absolute;
+        background: black;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        opacity: 0.5;
+      }
+
     </style>
   </head>
   <body>
-    <script>tartarus.run();</script>
+    <div id="shader"></div>    
+    <div id="choose">
+      <h1>Tartarus</h1>
+      <p>Welcome to the world of Tartarus. Please choose a nick name and a character.</p>
+      <input id="nick" name="nick" placeholder="Please enter your nickname">
+      <ul>
+        <li class="character selected" id="mario"></li>
+        <li class="character" id="bowser"></li>
+        <li class="character" id="other"></li>
+      </ul>
+      <button id="join">Enter the world of Tartarus</button>
+    </div>
+    <script>
+      (function() {
+        var shader = document.getElementById("shader");
+        var dialog = document.getElementById("choose");
+        var join = document.getElementById("join");
+        var nick = document.getElementById("nick");
+
+        join.onclick = function(event) {
+          var nickname = nick.value;
+
+          event.preventDefault();
+
+          if (nickname.length < 2) {
+            alert("Expected at least two chars in nick");
+            return false;
+          }
+
+          tartarus.network.join(nickname, "mario", function(err) {
+            if (err) {
+              alert(err.message);
+              return;
+            }
+            tartarus.input.startCapture();
+            tartarus.scene.start(nickname, "mario");
+            dialog.style.display = "none";
+            shader.style.display = "none";
+          });
+
+          return false;
+        };
+
+        tartarus.input.init();
+        tartarus.viewport.init();
+        tartarus.scene.init();
+        tartarus.eventloop.start();
+      })();
+    </script>
   </body>
 </html>

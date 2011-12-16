@@ -6,6 +6,8 @@
 
   // Exported functions
   exports.init          = init;
+  exports.render        = render;
+  exports.intersection  = intersection;
 
 
   // Internal constants
@@ -23,58 +25,75 @@
                             [150, 10],
                             [100, 20],
                             [200, 20],
-                            [100, -5],
-                            [75,  -15],
+                            [100, 20],
+                            [75,  25],
+                            [175,  25],
+                            [50,  15],
+                            [100, 0],
+                            [75,  0],
+                            [20,  -20],
+                            [150, 10],
+                            [100, 5],
+                            [150, 10],
+                            [100, 20],
+                            [200, 20],
+                            [100, -5]
                           ];
+
+  // Internal variables
+  var pos               = { x: 0, y: 250 };
+  var bounds            = { x: pos.x, y: pos.y, x2: 0, y2: 0};
+  var anchors           = [];
+  var last              = null;
 
 
   function init() {
-    var ground = new Ground(0, 400);
-
     for (var i = 0; i < ANCHORS.length; i++) {
-      ground.appendAnchor(ANCHORS[i][0], ANCHORS[i][1]);
+      appendAnchor(ANCHORS[i][0], ANCHORS[i][1]);
+    }
+  }
+
+  function intersection(p) {
+    var boundsy;
+    var anchor;
+    var abounds;
+    var w;
+
+    // Only check for intersection if point is inside
+    // bounding box of the ground.
+    if (p.x >= bounds.x && p.y >= bounds.y &&
+        p.x <= bounds.x2) {
+
+      for (var i = 0, l = anchors.length; i < l; i++) {
+        anchor = anchors[i];
+        abounds = anchor.getBounds(pos.x, pos.y);
+        boundsy = Math.min(abounds.y, abounds.y2);
+
+        if (p.x >= abounds.x && p.y >= boundsy && p.x <= abounds.x2) {
+
+          w = (p.x - abounds.x) / (abounds.x2 - abounds.x);
+          anchor.r = 1;
+          return { x: abounds.x,
+                   y: abounds.y + (w * (abounds.y2 - abounds.y))
+                 };
+        }
+      }
+
     }
 
-    app.scene.add(ground);
+    return null;
   }
 
 
-  function Ground(x, y) {
-    this.x = x;
-    this.y = y;
-    this.anchors = [];
-    this.last = null;
-  }
-
-
-  Ground.prototype.appendAnchor = function(offsetX, offsetY) {
-    var anchor;
-    var x;
-    var y;
-
-    x = (this.last ? this.last.x : 0) + offsetX;
-    y = (this.last ? this.last.y : 0) + offsetY;
-
-    anchor = new Anchor(x, y);
-    this.anchors.push(anchor);
-
-    this.last = anchor;
-  };
-
-
-  Ground.prototype.addAnchor = function(a) {
-    this.anchors.push(a);
-  };
-
-
-  Ground.prototype.render = function(ctx) {
-    var camera = app.camera;
-    var anchors = this.anchors;
+  function render(ctx, camera) {
+    var point = camera.translate(pos);
     var anchor;
     var first;
     var last;
 
     ctx.save();
+    ctx.translate(point.x, point.y);
+
     ctx.fillStyle = "black";
     ctx.beginPath();
 
@@ -92,20 +111,76 @@
 
     ctx.closePath();
     ctx.fill();
+
     ctx.restore();
-  };
+  }
 
 
-  function Anchor(x, y) {
+  function appendAnchor(offsetX, offsetY) {
+    var sibling;
+    var anchor;
+    var x;
+    var y;
+
+    x = (last ? last.x : 0) + offsetX;
+    y = (last ? last.y : 0) + offsetY;
+
+    bounds.x2 += offsetX;
+    bounds.y2 = Math.max(bounds.y2, bounds.y2 + offsetY);
+
+    anchor = new Anchor(last, x, y);
+
+    anchors.push(anchor);
+
+    last = anchor;
+  }
+
+
+  // Ground.prototype.renderBounds = function(ctx) {
+  //   var anchors = this.anchors;
+  //   var anchor;
+  //   var bounds;
+  // 
+  //   for (var i = 0, l = anchors.length; i < l; i++) {
+  //     anchor = anchors[i];
+  //     bounds = anchor.bounds
+  //     ctx.strokeStyle = anchor.r ? "green" : "red";
+  //     anchor.r = 0;
+  //     ctx.strokeRect(bounds.x, bounds.y, bounds.x2 - bounds.x, bounds.y2 - bounds.y);
+  //   }
+  // 
+  // };
+  // 
+
+  function Anchor(sibling, x, y) {
+    this.sibling = sibling;
     this.x = x;
     this.y = y;
-    this.bounds = {}
+    if (sibling) {
+      this.bounds = {
+        x: sibling.x,
+        y: sibling.y,
+        x2: x,
+        y2: y,
+      };
+    } else {
+      this.bounds = { x: 0, y: 0, x2: 0, y2: 0 };
+    }
   }
+
+
+  Anchor.prototype.getBounds = function(offX, offY) {
+    var bounds = this.bounds;
+    return { x: bounds.x + offX,
+             y: bounds.y + offY,
+             x2: bounds.x2 + offX,
+             y2: bounds.y2 + offY};
+  };
 
 
   Anchor.prototype.render = function(ctx) {
     ctx.lineTo(this.x, this.y);
-    // ctx.quadraticCurveTo(this.x, this.y, this.cpx, this.cpy);
   };
+
 
 })(window.tartarus || (window.tartarus = {}));

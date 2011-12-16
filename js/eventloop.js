@@ -1,12 +1,17 @@
 (function(app) {
 
+  // Module namespace
+  var exports = app.eventloop = {};
+
 
   // Exported functions
-  app.run               = run;
+  exports.start         = start;
+  exports.stop          = stop;
 
 
   // Internal variables
   var time              = (new Date()).getTime();
+  var running           = false;
 
 
   // Emulate requestAnimationFrame
@@ -24,8 +29,20 @@
 
 
 
+  function start() {
+    running = true;
+    eventloop();
+  }
+
+
+  function stop() {
+    running = false;
+  }
+
+  // if (!app.input.stateOf("ESC"))
+
   // Capture input, render stuff
-  function sceneloop(dt) {
+  function eventloop() {
     var oldtime = time;
     var delta;
 
@@ -33,15 +50,12 @@
 
     delta = time - oldtime;
 
-    if (!app.input.stateOf("ESC"))
-      requestAnimationFrame(sceneloop);
-
     app.scene.update(delta);
     app.network.update(delta);
 
-    app.camera.centerTo(app.character.getUser());
+    app.viewport.render(delta);
 
-    app.scene.render();
+    running && requestAnimationFrame(eventloop);
   }
 
 
@@ -64,21 +78,7 @@
     // Start capture keyboard input
     app.input.startCapture();
 
-    // Start the scene loop
-    sceneloop();
-
-    // Resize viewport when window is resizing
-    window.addEventListener("resize", onresize, false);
   }
-
-
-  function onresize() {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-    app.viewport.setSize(width, height);
-    // app.camera.setActuals(width, height);
-  }
-
 
 
 
