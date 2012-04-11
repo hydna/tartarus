@@ -5,7 +5,7 @@
 
 
   // Hydna related constants
-  exports.HYDNA_URI           = "localhost:7010";
+  exports.HYDNA_URI           = "192.168.0.19:7010";
   exports.HANDSHAKE_CHANNEL   = 2;
 
 
