@@ -147,7 +147,6 @@
     try {
       ctx.drawImage(this.image, this.x, this.y);
     } catch (err) {
-      console.log(err.message)
     }
   };
 

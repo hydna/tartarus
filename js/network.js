@@ -84,7 +84,6 @@
     roomChannel.onJoinCallback = C;
 
     roomChannel.onopen = function(event) {
-      console.log("connected with %s %s", event.message, this.id);
       connectionid = event.message;
       roomChannel.emit("get_user_list");
     };
@@ -127,8 +126,6 @@
 
       switch (graph.method) {
         case "user-connect":
-          console.log("User connected ");
-          console.dir(graph.params);
           onuserconnect(graph.params);
           break;
         case "user-disconnect":
@@ -146,9 +143,12 @@
 
 
     roomChannel.onerror = function(err) {
-      console.log("Error connecting to hydna");
-      console.error(err.message);
-      return C(err);
+      if (roomChannel.onJoinCallback) {
+        roomChannel.onJoinCallback(err.message);
+        roomChannel.onJoinCallback = null;
+      } else {
+        alert(err.message);
+      }
     };
   }
 

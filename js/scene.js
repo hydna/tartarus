@@ -98,7 +98,6 @@
 
 
   function start (type, name) {
-    console.log("start %s %s", type, name);
 
     // Start capturing of keyboard input
     app.input.startCapture();
@@ -170,7 +169,6 @@
       ctx.drawImage(planet, camera.right - planet.width, 0);
       ctx.drawImage(clouds, 200, 400);
     } catch (err) {
-      console.log(err);
     }
 
     ctx.save();

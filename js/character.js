@@ -36,7 +36,6 @@
     var character;
 
     if (!(Character = CHARACHTERS[type])) {
-      console.log(type);
       throw new Error("Invalid character type");
     }
 
