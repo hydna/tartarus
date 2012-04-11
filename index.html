@@ -58,6 +58,7 @@
         background-repeat: no-repeat;
         background-position: center center;
         border: 5px solid #5d0103;
+        cursor: pointer;
         float: left;
         width: 50px;
         height: 64px;
@@ -223,7 +224,7 @@
 
           tartarus.network.join(nickname, selected + 1, function(err) {
             if (err) {
-              alert(err.message);
+              alert(err);
               return;
             }
             tartarus.scene.start(selected + 1, nickname);
