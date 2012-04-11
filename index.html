@@ -2,95 +2,114 @@
 <html>  
   <head>
     <title>Tartarus</title>
-    <link href='http://fonts.googleapis.com/css?family=Fondamento' rel='stylesheet' type='text/css'>
-    <script src="js/eventloop.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Amatic+SC:400,700' rel='stylesheet' type='text/css'>
+    <script src="js/constant.js"></script>
     <script src="js/viewport.js"></script>
     <script src="js/scene.js"></script>
     <script src="js/camera.js"></script>
     <script src="js/input.js"></script>
     <script src="js/ground.js"></script>
     <script src="js/character.js"></script>
+    <script src="js/eventloop.js"></script>
     <script src="js/network.js"></script>
-    <script src="../hydnajs2/dist/lib.js"></script>
+    <script type="text/javascript" src="http://cdn.hydna.com/1/hydna.js"></script>
     <style>
 
       html, body {
-        font-family: 'Fondamento', cursive;
+        font-family: 'Amatic SC', cursive;
         margin: 0;
         padding: 0;
         overflow: hidden;
       }
 
       h1 {
-        font-size: 3.4em;
+        font-size: 55px;
         text-align: center;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
       }
 
       p {
-        font-size: 0.8em;
+        font-size: 35px;
         text-align: center;
-        
+        margin: 0 0 10px 0;
       }
 
       div#choose {
         position: absolute;
         padding: 0 20px 40px 20px;
         color: white;
-        background: black;
         left: 50%;
         width: 400px;
         margin-left: -220px;
-        top: 150px;
+        top: 100px;
       }
 
       div#choose ul {
         list-style: none;
         overflow: hidden;
         padding: 0;
-        margin-top: 40px;
-        margin-bottom: 40px;
+        margin-left: 42px;
+        margin-top: 8px;
+        margin-bottom: 16px;
       }
 
       div#choose ul li.character {
-        background-color: #c82708;
+        background-color: #490000;
         background-repeat: no-repeat;
-        border: 1px solid transparent;
+        background-position: center center;
+        border: 5px solid #5d0103;
         float: left;
         width: 50px;
-        height: 80px;
-        margin-right: 20px;
+        height: 64px;
+        margin-right: 4px;
       }
 
       div#choose ul li.character.selected {
-        border: 1px solid black;
+        background-color: #7a0000;
       }
 
       div#choose input {
-        color: #999999;
-        border: 1px solid #202020;
-        background: transparent;
-        font-family: 'Fondamento', cursive;
-        font-size: 1.4em;
+        color: white;
+        border: 10px solid #5d0103;
+        background: #490000;
+        font-family: 'Amatic SC', cursive;
+        font-size: 50px;
+        font-weight: bold;
         text-align: center;
-        padding: 12px;
         width: 380px;
       }
 
       div#choose button {
         position: absolute;
         color: white;
-        background: #202020;
+        font-family: 'Amatic SC', cursive;
+        font-size: 25px;
+        background: url(images/button.png);
         border: none;
-        width: 200px;
-        height: 60px;
+        width: 276px;
+        height: 64px;
         left: 50%;
-        margin-left: -100px;
+        margin-left: -138px;
       }
 
       #mario {
         background-image: url(images/mario-poster.png);
-        background-position: center center;
+      }
+
+      #bear {
+        background-image: url(images/bear-poster.png);
+      }
+
+      #megaman {
+        background-image: url(images/megaman-poster.png);
+      }
+
+      #link {
+        background-image: url(images/link-poster.png);
+      }
+
+      #nemo {
+        background-image: url(images/nemo-poster.png);
       }
 
       #shader {
@@ -103,6 +122,49 @@
         opacity: 0.5;
       }
 
+      input.speech {
+        position: absolute;
+        left: 40px;
+        right: 40px;
+        bottom: 20px;
+        height: 30px;
+      }
+
+      input.hide {
+        display: none;
+      }
+
+      #credits {
+        color: white;
+        position: absolute;
+        bottom: 0;
+        padding: 6px;
+      }
+
+      #credits a {
+        color: white;
+      }
+
+      #instructions {
+        display: none;
+        position: absolute;
+        color: white;
+        bottom: 80px;
+        left: 0;
+        right: 0;
+        font-size: 1.6em;
+        text-align: center;
+      }
+
+      .running.show-instructions #instructions {
+        display: block;
+      }
+
+      .running #choose,
+      .running #credits,
+      .running #shader {
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -113,43 +175,67 @@
       <input id="nick" name="nick" placeholder="Please enter your nickname">
       <ul>
         <li class="character selected" id="mario"></li>
-        <li class="character" id="bowser"></li>
-        <li class="character" id="other"></li>
+        <li class="character" id="bear"></li>
+        <li class="character" id="megaman"></li>
+        <li class="character" id="link"></li>
+        <li class="character" id="nemo"></li>
       </ul>
       <button id="join">Enter the world of Tartarus</button>
     </div>
+    <div id="credits">
+      Hydna tech-demo, design by <a href="http://www.desudesu.com">desudesu.com</a>
+    </div>
+    <div id="instructions">
+      Use your arrow-keys to move and ENTER to say something
+    </div>
     <script>
       (function() {
-        var shader = document.getElementById("shader");
-        var dialog = document.getElementById("choose");
+        var body = document.getElementsByTagName("body")[0];
         var join = document.getElementById("join");
         var nick = document.getElementById("nick");
+        var chars = document.getElementsByTagName("li");
+        var selected = 0;
+
+        function foreach (C) {
+          for (var i = 0; i < chars.length; i++) C(chars[i], i);
+        }
+
+        foreach(function (li, index) {
+          li.onclick = function () {
+            foreach(function (li) {
+              li.className = "character";
+            });
+            li.className = "character selected";
+            selected = index;
+          };
+        });
+
 
         join.onclick = function(event) {
           var nickname = nick.value;
 
           event.preventDefault();
 
-          if (nickname.length < 2) {
+          if (/[A-Za-z\_]{2,10}/.test(nickname) == false) {
             alert("Expected at least two chars in nick");
             return false;
           }
 
-          tartarus.network.join(nickname, "mario", function(err) {
+          tartarus.network.join(nickname, selected + 1, function(err) {
             if (err) {
               alert(err.message);
               return;
             }
-            tartarus.input.startCapture();
-            tartarus.scene.start(nickname, "mario");
-            dialog.style.display = "none";
-            shader.style.display = "none";
+            tartarus.scene.start(selected + 1, nickname);
+            body.className = "running show-instructions";
+            setTimeout(function () {
+              body.className = "running";
+            }, 5000);
           });
 
           return false;
         };
 
-        tartarus.input.init();
         tartarus.viewport.init();
         tartarus.scene.init();
         tartarus.eventloop.start();

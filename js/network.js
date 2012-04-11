@@ -1,36 +1,57 @@
 (function(app) {
 
   // Module namespace
-  var exports = app.network = {};
+  var exports               = app.network = {};
 
 
   // Exported functions
-  exports.join          = join;
-  exports.init          = init;
-  exports.update        = update;
+  exports.join              = join;
+  exports.init              = init;
+  exports.update            = update;
+  exports.say               = say;
 
 
   // Internal constants
-  var HANDSHAKE_CHANNEL = 2
+  var HYDNA_URI             = app.constant.HYDNA_URI;
+  var HANDSHAKE_CHANNEL     = app.constant.HANDSHAKE_CHANNEL;
 
 
   // Internal variables
-  var connectionid      = null;
-  var roomChannel       = null;
-  var characters        = {};
-  var framecount        = 0;
+  var connectionid          = null;
+  var roomChannel           = null;
+  var characters            = {};
+  var framecount            = 0;
 
 
-  function join(name, skin, C) {
-    initRoomChannel(name, skin, C);
+  function join (name, chartype, C) {
+    initRoomChannel(name, chartype, C);
   }
 
 
-  function init(name, skin) {
+  function init (name, skin) {
     initRoomChannel(name, skin);
   }
 
-  function update(dt) {
+
+  function say (text) {
+    var user = app.scene.getUser();
+    var message;
+    var user;
+
+    if (user && connectionid) {
+
+      message = {
+        type: "say",
+        id: connectionid,
+        text: text
+      };
+
+      roomChannel.send(JSON.stringify(message));
+    }
+  }
+
+
+  function update (dt) {
     var user = app.scene.getUser();
     var message;
     var user;
@@ -38,6 +59,7 @@
     if (user && connectionid && (framecount++) % 4 == 0) {
 
       message = {
+        type: "state",
         id: connectionid,
         x: user.x,
         y: user.y,
@@ -51,8 +73,13 @@
 
   }
 
-  function initRoomChannel(name, skin, C) {
-    roomChannel = new HydnaChannel("localhost:7010/2?" + name + ":" + skin, "rwe");
+
+  function initRoomChannel(name, chartype, C) {
+    var uri;
+
+    uri = [ HYDNA_URI, "/", HANDSHAKE_CHANNEL, "?", name, ":", chartype ].join("");
+
+    roomChannel = new HydnaChannel(uri, "rwe");
 
     roomChannel.onJoinCallback = C;
 
@@ -69,26 +96,54 @@
 
       if (!graph) return;
 
-      if (graph.id == connectionid) {
-        // console.log("ignoring my own message");
-        return;
-      } else {
-        // console.log(graph.id, connectionid);
-      }
+      if (graph.id != connectionid && (character = characters[graph.id])) {
+        switch (graph.type) {
 
-      if ((character = characters[graph.id])) {
-        character.state = graph.state;
-        character.x = graph.x;
-        character.y = graph.y;
-        character.velx = graph.velx;
-        character.vely = graph.vely;
+          case "state":
+            character.state = graph.state;
+            character.x = graph.x;
+            character.y = graph.y;
+            character.velx = graph.velx;
+            character.vely = graph.vely;
+            break;
+
+          case "say":
+            character.setText(graph.text);
+            break;
+        }
       }
     };
 
 
     roomChannel.onsignal = function(event) {
-      handleSignal.apply(null, event.message.split(":"));
+      var graph;
+
+      try {
+        graph = JSON.parse(event.message);
+      } catch (err) {
+        // Ignore any signal that is not of type JSON.
+        return;
+      }
+
+      switch (graph.method) {
+        case "user-connect":
+          console.log("User connected ");
+          console.dir(graph.params);
+          onuserconnect(graph.params);
+          break;
+        case "user-disconnect":
+          onuserdisconnect(graph.params);
+          break;
+        case "user-list":
+          onuserlist(graph.params);
+          if (roomChannel.onJoinCallback) {
+            roomChannel.onJoinCallback();
+            roomChannel.onJoinCallback = null;
+          }
+          break;
+      }
     };
+
 
     roomChannel.onerror = function(err) {
       console.log("Error connecting to hydna");
@@ -98,60 +153,57 @@
   }
 
 
-  function handleSignal(op, arg1, arg2, arg3) {
-    console.log(arguments);
-    switch (op) {
-      case "user-connect":
-        onuserconnect(arg1, arg2, arg3);
-        break;
-      case "user-disconnect":
-        onuserdisconnect(arg1);
-        break;
-      case "user-list":
-        onuserlist(arg1);
-        if (roomChannel.onJoinCallback) {
-          roomChannel.onJoinCallback();
-          roomChannel.onJoinCallback = null;
-        }
-        break;
-      default:
-        console.error("unknown operator %s", op);
-        break;
-    }
-  }
 
-
-  function onuserconnect(id, name, skin) {
+  function onuserconnect(params) {
     var character;
 
-    character = app.character.create(0, 0, skin);
-    characters[id] = character;
+    if (params.id == connectionid) {
+      // Ignore if targeting the current connect. The signals from server
+      // can sometime be faster than the actual "handshake".
+      return;
+    }
+
+    character = app.character.create(params.type, params.name, 0, 0);
+    characters[params.id] = character;
 
     app.scene.add(character);
   }
 
 
-  function onuserdisconnect(id) {
-    if (id in characters) {
-      app.scene.remove(characters[id]);
-      delete characters[id];
+  function onuserdisconnect(params) {
+    if (params.id in characters) {
+      app.scene.remove(characters[params.id]);
+      delete characters[params.id];
     }
   }
 
-  function onuserlist(data) {
-    var ids = data.split(",");
+
+  function onuserlist(params) {
     var character;
+    var graph;
     var id;
 
-    for (var i = 0; i < ids.length; i++) {
-      id = ids[i];
-      if (id == connectionid) continue;
-      character = app.character.create(0, 0);
-      characters[id] = character;
-      app.scene.add(character);
+    if (!params || !params.length) {
+      return;
     }
 
-    console.log(characters);
+    for (var i = 0; i < params.length; i++) {
+      graph = params[i];
+
+      if (graph.id == connectionid) {
+        // Ignore current user
+        continue;
+      }
+
+      try {
+        character = app.character.create(graph.type, graph.name, 0, 0);
+        characters[graph.id] = character;
+        app.scene.add(character);
+      } catch (err) {
+        // Ignore any wrongly formatted objects
+        continue;
+      }
+    }
   }
 
 

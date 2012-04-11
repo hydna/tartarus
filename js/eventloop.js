@@ -1,7 +1,7 @@
 (function(app) {
 
   // Module namespace
-  var exports = app.eventloop = {};
+  var exports           = app.eventloop = {};
 
 
   // Exported functions
@@ -57,29 +57,5 @@
 
     running && requestAnimationFrame(eventloop);
   }
-
-
-  // Entry point for our application
-  function run() {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-
-    app.viewport.init(width, height);
-
-    app.scene.init();
-    app.network.init("Johan", "mario");
-    app.camera.init(width, height);
-
-    // Move camera to the center of scene
-    app.camera.move(-800, -540);
-
-    app.input.init();
-
-    // Start capture keyboard input
-    app.input.startCapture();
-
-  }
-
-
 
 })(window.tartarus || (window.tartarus = {}));

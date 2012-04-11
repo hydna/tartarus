@@ -1,33 +1,33 @@
 (function(app) {
 
   // Module namespace
-  var exports = app.viewport = {};
+  var exports               = app.viewport = {};
 
 
   // Exported functions
-  exports.init          = init;
-  exports.clear         = clear;
-  exports.render        = render;
-  exports.setSize       = setSize;
-  exports.getSize       = getSize;
-  exports.getContext    = getContext;
+  exports.init              = init;
+  exports.clear             = clear;
+  exports.render            = render;
+  exports.setSize           = setSize;
+  exports.getSize           = getSize;
+  exports.getContext        = getContext;
 
 
-  // Module level constants
-  var DIM_COLOR         = "#be3203";
-  var CLEAR_COLOR       = "#d52900";
+  // Internal constants
+  var DIM_COLOR             = "#b24141";
+  var CLEAR_COLOR           = "#d52900";
 
 
-  // Module level variables
-  var body              = null;
-  var canvas            = null;
-  var context           = null;
-  var skybg             = null;
-  var horizbg           = null;
+  // Internal variables
+  var body                  = null;
+  var canvas                = null;
+  var context               = null;
+  var skybg                 = null;
+  var horizbg               = null;
 
 
   // Initializes the view-port.
-  function init() {
+  function init () {
     var width = window.innerWidth;
     var height = window.innerHeight;
 
@@ -50,13 +50,13 @@
   }
 
 
-  function render() {
+  function render () {
     clear();
     app.scene.render(context);
   }
 
 
-  function clear() {
+  function clear () {
     var width = canvas.width;
     var height = canvas.height;
 
@@ -72,7 +72,7 @@
   }
 
 
-  function setSize(width, height) {
+  function setSize (width, height) {
     canvas.width = width;
     canvas.height = height;
 
@@ -80,16 +80,16 @@
 
     skybg = context.createLinearGradient(0, 0, 0, height * 0.2);
     skybg.addColorStop(0, DIM_COLOR);
-    skybg.addColorStop(0.8, CLEAR_COLOR);
+    skybg.addColorStop(0.6, CLEAR_COLOR);
   }
 
 
-  function getSize() {
+  function getSize () {
     return { width: canvas.width, height: canvas.height };
   }
 
 
-  function onresize() {
+  function onresize () {
     var width = window.innerWidth;
     var height = window.innerHeight;
     setSize(width, height);
@@ -97,7 +97,7 @@
 
 
 
-  function getContext() {
+  function getContext () {
     return context;
   }
 

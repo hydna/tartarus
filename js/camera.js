@@ -7,15 +7,6 @@
   // Exported functions
   exports.panningCamera = panningCamera;
   exports.followCamera  = followCamera;
-  exports.move          = move;
-  exports.setPos        = setPos;
-  exports.getPos        = getPos;
-  exports.setLimits     = setLimits;
-  exports.translate     = translate;
-  exports.getBottom     = getBottom;
-  exports.zoom          = zoom;
-  exports.getZoom       = getZoom;
-  exports.centerTo      = centerTo;
 
 
   // Internal variables
@@ -32,15 +23,21 @@
 
   function panningCamera() {
     var camera = new Camera();
+    var amp = 0.02;
     var x = -850;
     var y = -340;
 
     camera.left = 0;
-    camera.top = -20;
+    camera.top = -40;
 
     camera.update = function(dt) {
-      this.move(0.02 * dt);
-      this.top = -20;
+      if (this.left >= 900) {
+        amp = -0.02;
+      } else if (this.left < 0) {
+        amp = 0.02;
+      }
+      this.move(amp * dt);
+      this.top = camera.height - (camera.height * 1.3);
     };
 
     return camera;
@@ -51,7 +48,8 @@
     var camera = new Camera();
 
     camera.update = function(dt) {
-      this.center(point);
+      this.left = point.x - (this.width / 2);
+      this.top = point.y - ((this.height / 2) + (this.height * 0.2));
     };
 
     return camera;
@@ -60,6 +58,7 @@
 
   function Camera() {
     var size = app.viewport.getSize();
+
     this.width = size.width;
     this.height = size.height;
     this.left = 0;
@@ -115,83 +114,6 @@
   };
 
 
-  Camera.prototype.intersects = function(bounds) {
-    
-  };
-
-
-  // Creates a new viewport
-  function init(w, h) {
-    width = w;
-    height = h;
-    left = 0;
-    top = 0;
-    right = w;
-    bottom = h;
-    centerX = w / 2;
-    centerY = h / 2
-  }
-
-
-  function move(offX, offY) {
-    setPos(centerX + offX, centerY + offY);
-  }
-
-
-  function zoom(value) {
-    if (scale + value < 0.3 || scale + value > 1.7) {
-      return;
-    }
-    scale += value;
-    // setPos(centerX, centerY);
-    }
-
-
-  function getPos() {
-    return { x: left, y: top };
-  }
-
-
-  function setPos(cx, cy) {
-    var s = 1 + (1 - scale);
-    // s = s * 6
-    left = (cx / 2) * -s;
-    top = (cy / 2) * -s;
-    centerX = cx;
-    centerY = cy;
-    console.log(scale, (s), cx, cy, left, top);
-  }
-
-  function centerTo(point) {
-    left = point.x - (width / 2);
-    top = point.y - (height / 2);
-  }
-
-  function getZoom() {
-    return scale;
-  }
-
-
-  function setZoom(z) {
-    
-  }
-
-
-  function setLimits(w, h, z) {
-    width = w;
-    height = h;
-    zooom = z;
-  }
-
-
-  function getBottom(point) {
-    return height - (point.y - top);
-  }
-
-
-  function translate(point) {
-    return { x: point.x - left, y: point.y - top };
-  }
-
+  Camera.prototype.intersects = function(bounds) { };
 
 })(window.tartarus || (window.tartarus = {}));
