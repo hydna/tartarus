@@ -191,6 +191,11 @@
       Use your arrow-keys to move and ENTER to say something
     </div>
     <script>
+      if (/MSIE/.test(window.navigator.userAgent)) {
+        alert("This demo is not optimized for Internet Explorer. Though, Internet Explorer is fully supported by Hydna");
+      }
+    </script>
+    <script>
       (function() {
         var body = document.getElementsByTagName("body")[0];
         var join = document.getElementById("join");
