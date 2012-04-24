@@ -9,7 +9,7 @@
   exports.init              = init;
   exports.render            = render;
   exports.intersection      = intersection;
-
+  exports.getBounds         = getBounds;
 
   // Internal constants
   var MAP_ANCHORS           = app.constant.MAP_ANCHORS
@@ -67,6 +67,11 @@
     }
 
     return null;
+  }
+
+
+  function getBounds () {
+    return bounds;
   }
 
 

@@ -155,7 +155,9 @@
 
 
   function onuserconnect(params) {
+    var bounds = app.ground.getBounds();
     var character;
+    var x;
 
     if (params.id == connectionid) {
       // Ignore if targeting the current connect. The signals from server
@@ -163,7 +165,8 @@
       return;
     }
 
-    character = app.character.create(params.type, params.name, 0, 0);
+    x = bounds.x2 / 2
+    character = app.character.create(params.type, params.name, x, 0);
     characters[params.id] = character;
 
     app.scene.add(character);
@@ -179,9 +182,11 @@
 
 
   function onuserlist(params) {
+    var bounds = app.ground.getBounds();
     var character;
     var graph;
     var id;
+    var x;
 
     if (!params || !params.length) {
       return;
@@ -196,7 +201,8 @@
       }
 
       try {
-        character = app.character.create(graph.type, graph.name, 0, 0);
+        x = bounds.x2 / 2;
+        character = app.character.create(graph.type, graph.name, x, 0);
         characters[graph.id] = character;
         app.scene.add(character);
       } catch (err) {

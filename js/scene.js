@@ -98,15 +98,16 @@
 
 
   function start (type, name) {
+    var bounds = app.ground.getBounds();
 
     // Start capturing of keyboard input
     app.input.startCapture();
 
-    user = app.character.create(type, name, 200, 100);
+    user = app.character.create(type, name, bounds.x2 / 2, 100);
 
     user.ondeath = function () {
       setTimeout(function () {
-        user.spawn(200, 100);
+        user.spawn(bounds.x2 / 2, 100);
       }, 1200);
     };
 
