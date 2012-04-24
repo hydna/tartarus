@@ -29,19 +29,20 @@
 
 
 
-  function start() {
+  function start () {
     running = true;
     eventloop();
+    renderloop();
   }
 
 
-  function stop() {
+  function stop () {
     running = false;
   }
 
   // if (!app.input.stateOf("ESC"))
 
-  // Capture input, render stuff
+  // Capture input and update the world
   function eventloop() {
     var oldtime = time;
     var delta;
@@ -53,9 +54,14 @@
     app.scene.update(delta);
     app.network.update(delta);
 
-    app.viewport.render(delta);
-
-    running && requestAnimationFrame(eventloop);
+    running && setTimeout(eventloop, 30);
   }
+
+  // render stuff
+  function renderloop () {
+    app.viewport.render();
+    running && requestAnimationFrame(renderloop);
+  }
+
 
 })(window.tartarus || (window.tartarus = {}));
