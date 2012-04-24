@@ -68,7 +68,7 @@
         state: user.state
       };
 
-      roomChannel.send(JSON.stringify(message));
+      roomChannel.send(JSON.stringify(message), 2);
     }
 
   }
