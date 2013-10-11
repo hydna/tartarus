@@ -13,7 +13,6 @@
 
   // Internal constants
   var HYDNA_URI             = app.constant.HYDNA_URI;
-  var HANDSHAKE_CHANNEL     = app.constant.HANDSHAKE_CHANNEL;
 
 
   // Internal variables
@@ -77,14 +76,14 @@
   function initRoomChannel(name, chartype, C) {
     var uri;
 
-    uri = [ HYDNA_URI, "/", HANDSHAKE_CHANNEL, "?", name, ":", chartype ].join("");
+    uri = [ HYDNA_URI, "?", name, ":", chartype ].join("");
 
     roomChannel = new HydnaChannel(uri, "rwe");
 
     roomChannel.onJoinCallback = C;
 
     roomChannel.onopen = function(event) {
-      connectionid = event.message;
+      connectionid = event.data;
       roomChannel.emit("get_user_list");
     };
 
@@ -118,7 +117,7 @@
       var graph;
 
       try {
-        graph = JSON.parse(event.message);
+        graph = JSON.parse(event.data);
       } catch (err) {
         // Ignore any signal that is not of type JSON.
         return;

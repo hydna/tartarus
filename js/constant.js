@@ -5,8 +5,7 @@
 
 
   // Hydna related constants
-  exports.HYDNA_URI           = "tartarus.hydna.net";
-  exports.HANDSHAKE_CHANNEL   = 2;
+  exports.HYDNA_URI           = "tartarus.hydna.net/players/";
 
 
   // Character action constants
