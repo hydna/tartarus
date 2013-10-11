@@ -14,9 +14,7 @@ behavior('/players/', {
       "params": {
         "id": hexid,
         "name": name,
-        "type": type,
-        "event.token": event.token
-
+        "type": type
       }
     };
 
