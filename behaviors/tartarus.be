@@ -1,13 +1,13 @@
 behavior('/players/', {
 
   open: function(event) {
-    var token = request.token.split(":");
+    var token = event.token.split(":");
     var name = token[0];
     var type = token[1];
     var hexid = event.connection.id.toString(16);
     var message;
 
-    event.channel.set('users:' + hexid, hexid + ":" + type + ":" + name);
+    event.channel.set('users:' + hexid, hexid + ':' + type + ":" + name);
 
     message = {
       "method": "user-connect",
